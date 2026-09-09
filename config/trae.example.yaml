@@ -1,0 +1,121 @@
+# 服务端核心配置示例 —— 拷贝为 server/trae.yaml 后填入实际值
+server:
+  host: 0.0.0.0
+  port: 8080
+  workers: 1
+  cors_origins:
+    - vscode://
+    - http://localhost:* # 本地开发
+    - https://*.your-company.com # 生产域
+
+auth:
+  # API Key 列表；明文仅供本地测试，生产请使用 KMS 或 Hash
+  api_keys:
+    - key: "local-dev-key-please-change"
+      name: "Local Development"
+      quota:
+        requests_per_minute: 120
+        tokens_per_day: 1000000
+  # JWT（可选，启用后除 API Key 外也接受 JWT）
+  jwt:
+    enabled: false
+    secret: "change-me-in-production"
+    algorithm: HS256
+    expires_seconds: 3600
+
+logging:
+  level: INFO
+  json: true
+  file: "" # 留空输出到 stdout
+
+storage:
+  database_url: "sqlite:///./data/trae.db"
+  audit_enabled: true
+
+# 模型路由
+models:
+  providers:
+    - id: openai-default
+      kind: openai
+      base_url: "https://api.openai.com/v1"
+      api_key: "${OPENAI_API_KEY}"
+      default_model: "gpt-4o-mini"
+      enabled: true
+    - id: anthropic-default
+      kind: anthropic
+      base_url: "https://api.anthropic.com"
+      api_key: "${ANTHROPIC_API_KEY}"
+      default_model: "claude-sonnet-4-5"
+      enabled: false
+    - id: deepseek
+      kind: openai # DeepSeek 兼容 OpenAI 协议
+      base_url: "https://api.deepseek.com/v1"
+      api_key: "${DEEPSEEK_API_KEY}"
+      default_model: "deepseek-chat"
+      enabled: false
+    - id: qwen
+      kind: openai
+      base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+      api_key: "${QWEN_API_KEY}"
+      default_model: "qwen-plus"
+      enabled: false
+  # 任务 → 模型 路由（任务级）
+  routing:
+    chat: openai-default
+    agent: openai-default
+    completion: openai-default
+    embedding: openai-default
+
+# 代码库索引
+indexer:
+  enabled: true
+  storage_dir: "./data/chroma"
+  embedding_provider: openai-default
+  embedding_model: "text-embedding-3-small"
+  max_file_size_kb: 512
+  ignore_patterns:
+    - "node_modules/**"
+    - ".git/**"
+    - "dist/**"
+    - "build/**"
+    - "__pycache__/**"
+    - ".venv/**"
+    - "*.min.js"
+    - "*.lock"
+
+# 智能体
+agent:
+  max_iterations: 30
+  max_subagent_depth: 2
+  require_plan_confirmation: true
+  context_window: 128000
+  # 高风险命令拦截（双重防护：第一道是沙箱）
+  dangerous_command_patterns:
+    - "rm -rf /"
+    - "rm -rf ~"
+    - ":(){:|:&};:"
+    - "mkfs"
+    - "dd if="
+    - "shutdown"
+    - "reboot"
+
+# MCP
+mcp:
+  enabled: true
+  servers:
+    - name: "filesystem"
+      transport: stdio
+      command: "npx"
+      args: ["-y", "@modelcontextprotocol/server-filesystem", "./workspace"]
+      enabled: false
+
+# 沙箱
+sandbox:
+  enabled: true
+  default_policy: "default"
+  policies:
+    default:
+      allow_network: false
+      allow_write: true
+      max_runtime_seconds: 60
+      max_memory_mb: 512

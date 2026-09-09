@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  trae-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    image: trae-ide-clone/server:0.1.0
+    container_name: trae-server
+    restart: unless-stopped
+    ports:
+      - "${TRAE_PORT:-8080}:8080"
+    environment:
+      - TRAE_CONFIG=/app/config/trae.yaml
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - QWEN_API_KEY=${QWEN_API_KEY:-}
+      - TRAE_LOG_LEVEL=${TRAE_LOG_LEVEL:-INFO}
+    volumes:
+      - ./config/trae.yaml:/app/config/trae.yaml:ro
+      - ./config/sandbox.json:/app/config/sandbox.json:ro
+      - trae-data:/app/data
+      - trae-workspace:/app/workspace
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8080/health').raise_for_status()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: trae-nginx
+    restart: unless-stopped
+    ports:
+      - "${TRAE_PUBLIC_PORT:-8443}:443"
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - trae-server
+
+volumes:
+  trae-data:
+  trae-workspace:

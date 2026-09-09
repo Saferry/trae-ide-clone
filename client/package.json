@@ -1,0 +1,116 @@
+{
+  "name": "trae-ide-clone",
+  "displayName": "Trae IDE Clone",
+  "description": "Enterprise AI programming assistant - inspired by Trae, fully self-implemented.",
+  "version": "0.1.0",
+  "publisher": "trae-ide-clone",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming",
+    "AI",
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "files": [
+    "out",
+    "media",
+    "README.md"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "trae.openChat",
+        "title": "Trae: Open Chat",
+        "category": "Trae"
+      },
+      {
+        "command": "trae.runAgent",
+        "title": "Trae: Run Agent on Selection",
+        "category": "Trae"
+      },
+      {
+        "command": "trae.toggleInlineCompletion",
+        "title": "Trae: Toggle Inline Completion",
+        "category": "Trae"
+      },
+      {
+        "command": "trae.indexWorkspace",
+        "title": "Trae: Index Workspace",
+        "category": "Trae"
+      }
+    ],
+    "configuration": {
+      "title": "Trae IDE Clone",
+      "properties": {
+        "trae.server.url": {
+          "type": "string",
+          "default": "http://127.0.0.1:8080",
+          "description": "Trae agent server base URL"
+        },
+        "trae.server.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API Key for the Trae server"
+        },
+        "trae.server.wsPath": {
+          "type": "string",
+          "default": "/v1/chat/ws",
+          "description": "WebSocket path"
+        },
+        "trae.model.provider": {
+          "type": "string",
+          "default": "openai-default"
+        },
+        "trae.model.name": {
+          "type": "string",
+          "default": ""
+        },
+        "trae.completion.enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "trae.rules.autoLoad": {
+          "type": "boolean",
+          "default": true
+        },
+        "trae.rules.path": {
+          "type": "string",
+          "default": ".trae/rules.md"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "trae.openChat",
+        "key": "ctrl+shift+t",
+        "mac": "cmd+shift+t"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "watch": "tsc -w -p .",
+    "compile": "tsc -p .",
+    "lint": "eslint src --ext .ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@types/ws": "^8.5.10",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.5",
+    "vsce": "^2.15.0"
+  },
+  "dependencies": {
+    "ws": "^8.16.0"
+  }
+}

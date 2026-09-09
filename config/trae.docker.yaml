@@ -1,0 +1,108 @@
+# 服务端运行时配置（容器内）
+server:
+  host: 0.0.0.0
+  port: 8080
+  workers: 1
+  cors_origins:
+    - vscode://
+    - http://localhost:*
+    - https://*.your-company.com
+
+auth:
+  api_keys:
+    - key: "${TRAE_API_KEY:-local-dev-key-please-change}"
+      name: "Container Default"
+      quota:
+        requests_per_minute: 240
+        tokens_per_day: 5000000
+  jwt:
+    enabled: false
+
+logging:
+  level: INFO
+  json: true
+
+storage:
+  database_url: "sqlite:////app/data/trae.db"
+  audit_enabled: true
+
+models:
+  providers:
+    - id: openai-default
+      kind: openai
+      base_url: "https://api.openai.com/v1"
+      api_key: "${OPENAI_API_KEY}"
+      default_model: "gpt-4o-mini"
+      enabled: true
+    - id: anthropic-default
+      kind: anthropic
+      base_url: "https://api.anthropic.com"
+      api_key: "${ANTHROPIC_API_KEY}"
+      default_model: "claude-sonnet-4-5"
+      enabled: false
+    - id: deepseek
+      kind: openai
+      base_url: "https://api.deepseek.com/v1"
+      api_key: "${DEEPSEEK_API_KEY}"
+      default_model: "deepseek-chat"
+      enabled: false
+    - id: qwen
+      kind: openai
+      base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+      api_key: "${QWEN_API_KEY}"
+      default_model: "qwen-plus"
+      enabled: false
+  routing:
+    chat: openai-default
+    agent: openai-default
+    completion: openai-default
+    embedding: openai-default
+
+indexer:
+  enabled: true
+  storage_dir: "/app/data/chroma"
+  embedding_provider: openai-default
+  embedding_model: "text-embedding-3-small"
+  max_file_size_kb: 512
+  ignore_patterns:
+    - "node_modules/**"
+    - ".git/**"
+    - "dist/**"
+    - "build/**"
+    - "__pycache__/**"
+    - ".venv/**"
+    - "*.min.js"
+    - "*.lock"
+
+agent:
+  max_iterations: 30
+  max_subagent_depth: 2
+  require_plan_confirmation: false
+  context_window: 128000
+  dangerous_command_patterns:
+    - "rm -rf /"
+    - "rm -rf ~"
+    - ":(){:|:&};:"
+    - "mkfs"
+    - "dd if="
+    - "shutdown"
+    - "reboot"
+
+mcp:
+  enabled: true
+  servers:
+    - name: filesystem
+      transport: stdio
+      command: npx
+      args: ["-y", "@modelcontextprotocol/server-filesystem", "/app/workspace"]
+      enabled: false
+
+sandbox:
+  enabled: true
+  default_policy: default
+  policies:
+    default:
+      allow_network: false
+      allow_write: true
+      max_runtime_seconds: 60
+      max_memory_mb: 512

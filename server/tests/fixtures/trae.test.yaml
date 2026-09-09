@@ -1,0 +1,51 @@
+server:
+  host: 127.0.0.1
+  port: 8088
+  cors_origins:
+    - "*"
+
+auth:
+  api_keys:
+    - key: "test-key"
+      name: "Test Key"
+      quota:
+        requests_per_minute: 1000
+        tokens_per_day: 10000000
+
+storage:
+  database_url: "sqlite:///./data/trae_test.db"
+
+models:
+  providers:
+    - id: fake-openai
+      kind: openai
+      base_url: "http://localhost:9999/v1"
+      api_key: "fake"
+      default_model: "fake-model"
+      enabled: true
+  routing:
+    chat: fake-openai
+    agent: fake-openai
+    completion: fake-openai
+    embedding: fake-openai
+
+agent:
+  max_iterations: 5
+  require_plan_confirmation: false
+  dangerous_command_patterns: []
+
+indexer:
+  enabled: false
+
+mcp:
+  enabled: false
+
+sandbox:
+  enabled: true
+  default_policy: default
+  policies:
+    default:
+      allow_network: false
+      allow_write: true
+      max_runtime_seconds: 10
+      max_memory_mb: 256

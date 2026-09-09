@@ -1,0 +1,54 @@
+{
+  "default_policy": "default",
+  "policies": {
+    "default": {
+      "filesystem": {
+        "allow_write_paths": [
+          "${workspace}"
+        ],
+        "allow_read_paths": [
+          "${workspace}",
+          "/usr/lib",
+          "/usr/local/lib"
+        ],
+        "deny_paths": [
+          "~/.ssh",
+          "~/.aws",
+          "~/.kube",
+          "/etc",
+          "/var",
+          "/boot",
+          "/proc",
+          "/sys"
+        ]
+      },
+      "network": {
+        "enabled": false,
+        "allowed_domains": [
+          "api.openai.com",
+          "api.anthropic.com",
+          "pypi.org",
+          "registry.npmjs.org"
+        ],
+        "denied_domains": []
+      },
+      "process": {
+        "max_runtime_seconds": 60,
+        "max_memory_mb": 512,
+        "max_cpu_percent": 80,
+        "allow_pty": false
+      },
+      "dangerous_commands": [
+        "rm -rf /",
+        "rm -rf ~",
+        ":(){ :|:& };:",
+        "mkfs",
+        "dd if=",
+        "shutdown",
+        "reboot",
+        "halt",
+        "poweroff"
+      ]
+    }
+  }
+}
